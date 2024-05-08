@@ -37,6 +37,6 @@ async def startup_event():
 async def exception_handler(request, exc):
     return JSONResponse(status_code=500, content={"message": "An unexpected error occurred."})
 
-app.include_router(user_routes.router) #everything should be working now?
+app.include_router(user_routes.router) #fixed secrets
 
 
