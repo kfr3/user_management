@@ -81,7 +81,7 @@ class UserService:
             return None
 
     @classmethod
-    async def update(cls, session: AsyncSession, user_id: UUID, update_data: Dict[str, str]) -> Optional[User]:
+    async def update(cls, session: AsyncSession , user_id: UUID, update_data: Dict[str, str]) -> Optional[User]:
         try:
             # validated_data = UserUpdate(**update_data).dict(exclude_unset=True)
             validated_data = UserUpdate(**update_data).model_dump(exclude_unset=True)
@@ -199,3 +199,27 @@ class UserService:
             await session.commit()
             return True
         return False
+
+    @classmethod
+    async def upgrade_to_professional(cls, session: AsyncSession, user_id: UUID) -> Optional[User]:
+        try:
+            # Retrieve the user by user ID
+            user = await cls.get_by_id(session, user_id)
+        
+            # Check if the user exists
+            if not user:
+                logger.error(f"User with ID {user_id} not found.")
+                return None
+        
+            # Modify user's role to professional if it meets certain criteria
+            # For example, you can check if the user has completed certain actions or criteria
+            user.role = UserRole.PROFESSIONAL
+        
+            # Commit the changes to the database
+            await session.commit()
+        
+            logger.info(f"User {user_id} upgraded to professional status.")
+            return user
+        except Exception as e:
+            logger.error(f"Error upgrading user to professional status: {e}")
+            return None
