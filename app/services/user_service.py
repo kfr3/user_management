@@ -103,28 +103,28 @@ class UserService:
             return None
 
     async def update_first_name(cls, session: AsyncSession, user_id: UUID, new_first_name: str) -> Optional[User]:
-    try:
+        try:
         # Construct a dictionary with the updated first name
-        update_data = {'first_name': new_first_name}
+            update_data = {'first_name': new_first_name}
 
         # Update the user's first name in the database
-        query = update(User).where(User.id == user_id).values(**update_data).execution_options(synchronize_session="fetch")
-        await cls._execute_query(session, query)
+            query = update(User).where(User.id == user_id).values(**update_data).execution_options(synchronize_session="fetch")
+            await cls._execute_query(session, query)
 
         # Retrieve the updated user from the database
-        updated_user = await cls.get_by_id(session, user_id)
+            updated_user = await cls.get_by_id(session, user_id)
 
-        if updated_user:
+            if updated_user:
             # Explicitly refresh the updated user object
-            session.refresh(updated_user)
-            logger.info(f"User {user_id} updated successfully.")
-            return updated_user
-        else:
-            logger.error(f"User {user_id} not found after update attempt.")
-        return None
-    except Exception as e:  
-        logger.error(f"Error during user update: {e}")
-        return None
+                session.refresh(updated_user)
+                logger.info(f"User {user_id} updated successfully.")
+                return updated_user
+            else:
+                logger.error(f"User {user_id} not found after update attempt.")
+            return None
+        except Exception as e:  
+            logger.error(f"Error during user update: {e}")
+            return None
 
     @classmethod
     async def delete(cls, session: AsyncSession, user_id: UUID) -> bool:
@@ -223,3 +223,26 @@ class UserService:
             await session.commit()
             return True
         return False
+
+    async def upgrade_to_professional(cls, session: AsyncSession, user_id: UUID) -> Optional[User]:
+        try:
+        # Retrieve the user by user ID
+            user = await cls.get_by_id(session, user_id)
+        
+        # Check if the user exists
+            if not user:
+                logger.error(f"User with ID {user_id} not found.")
+                return None
+        
+        # Modify user's role to professional if it meets certain criteria
+        # For example, you can check if the user has completed certain actions or criteria
+            user.role = UserRole.PROFESSIONAL
+        
+        # Commit the changes to the database
+            await session.commit()
+        
+            logger.info(f"User {user_id} upgraded to professional status.")
+            return user
+        except Exception as e:
+            logger.error(f"Error upgrading user to professional status: {e}")
+            return None
