@@ -73,17 +73,6 @@ async def test_update_user_invalid_data(db_session, user):
     updated_user = await UserService.update(db_session, user.id, {"email": "invalidemail"})
     assert updated_user is None
 
-async def test_update_user_first_name_valid_data(db_session, user):
-    new_first_name = "UpdatedFirstName"
-    updated_user = await UserService.update_first_name(db_session, user.id, new_first_name)
-    assert updated_user is not None
-    assert updated_user.first_name == new_first_name
-
-# Test updating a user's first name with invalid data
-async def test_update_user_first_name_invalid_data(db_session, user):
-    updated_user = await UserService.update_first_name(db_session, user.id, "")
-    assert updated_user is None
-
 # Test deleting a user who exists
 async def test_delete_user_exists(db_session, user):
     deletion_success = await UserService.delete(db_session, user.id)
@@ -172,3 +161,9 @@ async def test_unlock_user_account(db_session, locked_user):
     assert unlocked, "The account should be unlocked"
     refreshed_user = await UserService.get_by_id(db_session, locked_user.id)
     assert not refreshed_user.is_locked, "The user should no longer be locked"
+
+async def test_upgrade_to_professional(db_session, user):
+    user_id = user.id
+    upgraded_user = await UserService.upgrade_to_professional(db_session, user.id)
+    assert upgraded_user is not None
+    assert upgraded_user.role == UserRole.PROFESSIONAL
